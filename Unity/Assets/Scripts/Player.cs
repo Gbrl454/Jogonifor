@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public Camera[] cameras;
+    private int cameraAtual = 0;
     public float gravity;
     public float speed;
     public float run_fac;
@@ -14,13 +16,13 @@ public class Player : MonoBehaviour
     private float rotateH;
     private float rotateV;
     private GameObject objectCAM;
-    private Animator anim;
+    private Animator animator;
 
 
     private void Start()
     {
         controller = GetComponent<CharacterController>();
-        anim = GetComponent<Animator>();
+        animator = GetComponent<Animator>();
         objectCAM = GameObject.FindWithTag("MainCamera");
     }
 
@@ -28,40 +30,82 @@ public class Player : MonoBehaviour
     {
         DELTA_TIME = Time.deltaTime;
         movimentacao();
+        trocaCamera();
+    }
+
+    private void trocaCamera()
+    {
+        if (Input.GetKeyUp(KeyCode.F5))
+        {
+            cameraAtual++;
+            if (cameraAtual >= cameras.Length)
+            {
+                cameraAtual = 0;
+            }
+        }
+
+        for (int i = 0; i < cameras.Length; i++)
+        {
+            cameras[i].depth = (cameraAtual == i) ? 1 : 0;
+            cameras[i].tag = "Untagged";
+        }
+
+        cameras[cameraAtual].tag = "MainCamera";
+
+        objectCAM = GameObject.FindWithTag("MainCamera");
     }
 
     private void movimentacao()
     {
-        float spd = speed;
-        int animF = 0;
+        bool isRun = false;
+        int anim = 0;
+        int hDir = 0;
+        int vDir = 0;
+
         move = Vector3.zero;
 
         if (Input.GetKey(KeyCode.W))
         {
             move += Vector3.forward;
-            animF = 1;
+            vDir = 1;
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                isRun = true;
+            }
+            anim = (isRun) ? 2 : 1;
         }
-
-        if (Input.GetKey(KeyCode.A)) move -= Vector3.right;
 
         if (Input.GetKey(KeyCode.S))
         {
             move -= Vector3.forward;
-            animF -= 1;
+            vDir = -1;
+            anim = 1;
         }
 
-        if (Input.GetKey(KeyCode.D)) move += Vector3.right;
-
-        if (Input.GetKey(KeyCode.Space) && controller.isGrounded)
+        if (Input.GetKey(KeyCode.A) && anim == 0)
         {
-            print("Pula");
+            move -= Vector3.right;
+            hDir = -1;
         }
 
-        if (Input.GetKey(KeyCode.LeftShift) && animF >= 0)
+        if (Input.GetKey(KeyCode.D) && anim == 0)
         {
-            spd = speed * run_fac;
-            animF += 1;
+            move += Vector3.right;
+            hDir = 1;
         }
+
+
+
+
+
+
+
+
+
+
+
+        float spd = (isRun) ? (speed * run_fac) : speed;
+        bool idle = (anim != 0 || hDir != 0 || vDir != 0) ? false : true;
 
         move *= spd * DELTA_TIME;
 
@@ -79,7 +123,10 @@ public class Player : MonoBehaviour
         move = transform.TransformDirection(move);
 
         move -= Vector3.up * gravity * DELTA_TIME;
-        anim.SetInteger("Transition", animF);
+        animator.SetInteger("Animation", anim);
+        animator.SetInteger("HDir", hDir);
+        animator.SetInteger("VDir", vDir);
+        animator.SetBool("Idle", idle);
         controller.Move(move);
     }
 }
