@@ -17,6 +17,7 @@ public class Player : MonoBehaviour
     private float rotateV;
     private GameObject objectCAM;
     private Animator animator;
+    public bool isCrawl = false;
 
 
     private void Start()
@@ -29,7 +30,8 @@ public class Player : MonoBehaviour
     private void Update()
     {
         DELTA_TIME = Time.deltaTime;
-        movimentacao();
+
+        movimentacaoChao();
         trocaCamera();
     }
 
@@ -53,59 +55,77 @@ public class Player : MonoBehaviour
         cameras[cameraAtual].tag = "MainCamera";
 
         objectCAM = GameObject.FindWithTag("MainCamera");
+
     }
 
-    private void movimentacao()
+    private void movimentacaoChao()
     {
         bool isRun = false;
         int anim = 0;
         int hDir = 0;
         int vDir = 0;
+        float spd;
+        bool idle;
+
 
         move = Vector3.zero;
 
-        if (Input.GetKey(KeyCode.W))
+        if (Input.GetKeyUp(KeyCode.LeftControl))
         {
-            move += Vector3.forward;
-            vDir = 1;
-            if (Input.GetKey(KeyCode.LeftShift))
+            isCrawl = (isCrawl) ? false : true;
+        }
+
+
+        if (isCrawl)
+        {
+            anim = 0;
+            hDir = 0;
+            vDir = 0;
+            idle = true;
+
+            if (Input.GetKey(KeyCode.W))
             {
-                isRun = true;
+                move += Vector3.forward;
+                anim = 1;
             }
-            anim = (isRun) ? 2 : 1;
-        }
 
-        if (Input.GetKey(KeyCode.S))
+            spd = speed * .5f;
+        }
+        else
         {
-            move -= Vector3.forward;
-            vDir = -1;
-            anim = 1;
+            if (Input.GetKey(KeyCode.W))
+            {
+                move += Vector3.forward;
+                vDir = 1;
+                if (Input.GetKey(KeyCode.LeftShift))
+                {
+                    isRun = true;
+                }
+                anim = (isRun) ? 2 : 1;
+            }
+
+            if (Input.GetKey(KeyCode.S))
+            {
+                move -= Vector3.forward;
+                vDir = -1;
+                anim = 1;
+            }
+
+            if (Input.GetKey(KeyCode.A) && anim == 0)
+            {
+                move -= Vector3.right;
+                hDir = -1;
+            }
+
+            if (Input.GetKey(KeyCode.D) && anim == 0)
+            {
+                move += Vector3.right;
+                hDir = 1;
+            }
+            idle = (anim != 0 || hDir != 0 || vDir != 0) ? false : true;
+            spd = (isRun) ? (speed * run_fac) : speed;
         }
 
-        if (Input.GetKey(KeyCode.A) && anim == 0)
-        {
-            move -= Vector3.right;
-            hDir = -1;
-        }
-
-        if (Input.GetKey(KeyCode.D) && anim == 0)
-        {
-            move += Vector3.right;
-            hDir = 1;
-        }
-
-
-
-
-
-
-
-
-
-
-
-        float spd = (isRun) ? (speed * run_fac) : speed;
-        bool idle = (anim != 0 || hDir != 0 || vDir != 0) ? false : true;
 
         move *= spd * DELTA_TIME;
 
@@ -127,6 +147,8 @@ public class Player : MonoBehaviour
         animator.SetInteger("HDir", hDir);
         animator.SetInteger("VDir", vDir);
         animator.SetBool("Idle", idle);
+        animator.SetBool("Crawl", isCrawl);
         controller.Move(move);
     }
+
 }
