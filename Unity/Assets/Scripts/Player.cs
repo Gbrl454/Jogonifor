@@ -44,7 +44,11 @@ public class Player : MonoBehaviour
 
         if (Input.GetKey(KeyCode.A)) move -= Vector3.right;
 
-        if (Input.GetKey(KeyCode.S)) move -= Vector3.forward;
+        if (Input.GetKey(KeyCode.S))
+        {
+            move -= Vector3.forward;
+            animF -= 1;
+        }
 
         if (Input.GetKey(KeyCode.D)) move += Vector3.right;
 
@@ -53,7 +57,7 @@ public class Player : MonoBehaviour
             print("Pula");
         }
 
-        if (Input.GetKey(KeyCode.LeftShift))
+        if (Input.GetKey(KeyCode.LeftShift) && animF >= 0)
         {
             spd = speed * run_fac;
             animF += 1;
