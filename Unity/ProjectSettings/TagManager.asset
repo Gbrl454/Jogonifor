@@ -5,16 +5,17 @@ TagManager:
   serializedVersion: 2
   tags:
   - Escala
+  - CinemachineTarget
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
-  - 
-  - 
-  - 
+  - Quadros
+  - Escalavel
+  - Interaction
   - 
   - 
   - 
